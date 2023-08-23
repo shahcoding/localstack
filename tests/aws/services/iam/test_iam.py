@@ -3,8 +3,8 @@ import json
 import pytest
 from botocore.exceptions import ClientError
 
-from localstack.aws.accounts import get_aws_account_id
 from localstack.aws.api.iam import Tag
+from localstack.constants import TEST_AWS_ACCOUNT_ID
 from localstack.services.iam.provider import ADDITIONAL_MANAGED_POLICIES
 from localstack.testing.aws.util import create_client_with_keys, wait_for_user
 from localstack.testing.pytest import markers
@@ -169,7 +169,7 @@ class TestIAMIntegrations:
             PolicyName="test-policy", PolicyDocument=json.dumps(test_policy_document)
         )
         test_policy_arn = response["Policy"]["Arn"]
-        assert get_aws_account_id() in test_policy_arn
+        assert TEST_AWS_ACCOUNT_ID in test_policy_arn
 
         aws_client.iam.attach_user_policy(UserName=test_user_name, PolicyArn=test_policy_arn)
         attached_user_policies = aws_client.iam.list_attached_user_policies(UserName=test_user_name)

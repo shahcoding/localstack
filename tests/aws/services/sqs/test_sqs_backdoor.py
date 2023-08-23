@@ -3,6 +3,8 @@ import requests
 import xmltodict
 from botocore.exceptions import ClientError
 
+from localstack import config
+from localstack.constants import TEST_AWS_ACCOUNT_ID
 from localstack.services.sqs.utils import parse_queue_url
 from localstack.testing.pytest import markers
 from localstack.utils.strings import short_uid
@@ -23,7 +25,12 @@ def _parse_message_attributes(xml) -> list[dict]:
 
 class TestSqsDeveloperEdpoints:
     @markers.aws.only_localstack
-    def test_list_messages_has_no_side_effects(self, sqs_create_queue, aws_client):
+    @pytest.mark.parametrize("strategy", ["domain", "path"])
+    def test_list_messages_has_no_side_effects(
+        self, sqs_create_queue, monkeypatch, aws_client, strategy
+    ):
+        monkeypatch.setattr(config, "SQS_ENDPOINT_STRATEGY", strategy)
+
         queue_url = sqs_create_queue()
 
         aws_client.sqs.send_message(QueueUrl=queue_url, MessageBody="message-1")
@@ -125,7 +132,10 @@ class TestSqsDeveloperEdpoints:
         )
 
     @markers.aws.only_localstack
-    def test_list_messages_as_json(self, sqs_create_queue, aws_client):
+    @pytest.mark.parametrize("strategy", ["domain", "path"])
+    def test_list_messages_as_json(self, sqs_create_queue, monkeypatch, aws_client, strategy):
+        monkeypatch.setattr(config, "SQS_ENDPOINT_STRATEGY", strategy)
+
         queue_url = sqs_create_queue()
 
         aws_client.sqs.send_message(QueueUrl=queue_url, MessageBody="message-1")
@@ -149,7 +159,7 @@ class TestSqsDeveloperEdpoints:
 
         # make sure attributes are returned
         attributes = {a["Name"]: a["Value"] for a in messages[0]["Attribute"]}
-        assert attributes["SenderId"] == "000000000000"
+        assert attributes["SenderId"] == TEST_AWS_ACCOUNT_ID
         assert "ApproximateReceiveCount" in attributes
         assert "ApproximateFirstReceiveTimestamp" in attributes
         assert "SentTimestamp" in attributes
