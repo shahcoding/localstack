@@ -71,14 +71,12 @@ class AssetDirectory:
     """
 
     path: str
-    service_name: str
 
-    def __init__(self, path: str, service_name: str):
-        if not path or not service_name:
-            raise ValueError("path and service_name must be set")
+    def __init__(self, path: str):
+        if not path:
+            raise ValueError("path must be set")
 
         self.path = path
-        self.service_name = service_name
 
     def __str__(self):
         return self.path
