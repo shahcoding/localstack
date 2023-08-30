@@ -349,6 +349,7 @@ def kinesis_stream_name(kinesis_arn):
     return kinesis_arn.split(":stream/")[-1]
 
 
+# TODO make region_name mandatory
 def apigateway_invocations_arn(lambda_uri, region_name: str = None):
     return "arn:aws:apigateway:%s:lambda:path/2015-03-31/functions/%s/invocations" % (
         region_name or get_region(),
