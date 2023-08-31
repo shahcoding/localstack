@@ -153,7 +153,7 @@ jobs:
       - store_test_results:
           path: target/reports/
 
-  itest-s3-stream-provider:
+  itest-s3-v3-provider:
     executor: ubuntu-machine-amd64
     working_directory: /tmp/workspace/repo
     steps:
@@ -161,13 +161,13 @@ jobs:
           at: /tmp/workspace
       - prepare-pytest-tinybird
       - run:
-          name: Test S3 Streaming provider
+          name: Test S3 v3 provider
           environment:
-            PROVIDER_OVERRIDE_S3: "stream"
+            PROVIDER_OVERRIDE_S3: "v3"
             TEST_PATH: "tests/aws/services/s3/"
             COVERAGE_ARGS: "-p"
           command: |
-            PYTEST_ARGS="${TINYBIRD_PYTEST_ARGS}--reruns 3 --junitxml=target/reports/s3_stream.xml -o junit_suite_name='s3_stream'" make test-coverage
+            PYTEST_ARGS="${TINYBIRD_PYTEST_ARGS}--reruns 3 --junitxml=target/reports/s3_stream.xml -o junit_suite_name='s3_v3'" make test-coverage
       - run:
           name: Store coverage results
           command: mv .coverage.* target/coverage/
@@ -444,7 +444,7 @@ workflows:
       - itest-sfn-v2-provider:
           requires:
             - preflight
-      - itest-s3-stream-provider:
+      - itest-s3-v3-provider:
           requires:
             - preflight
       - unit-tests:
@@ -491,6 +491,7 @@ workflows:
           requires:
             - itest-lambda-legacy-local
             - itest-sfn-v2-provider
+            - itest-s3-v3-provider
             - docker-test-amd64
             - docker-test-arm64
             - collect-not-implemented
@@ -502,6 +503,7 @@ workflows:
           requires:
             - itest-lambda-legacy-local
             - itest-sfn-v2-provider
+            - itest-s3-v3-provider
             - docker-test-amd64
             - docker-test-arm64
             - unit-tests
