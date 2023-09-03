@@ -381,20 +381,6 @@ class LambdaProxyIntegration(BackendIntegration):
 
 
 class LambdaIntegration(BackendIntegration):
-    def _lambda_integration_uri(self, invocation_context: ApiInvocationContext):
-        """
-        https://docs.aws.amazon.com/apigateway/latest/developerguide/aws-api-gateway-stage-variables-reference.html
-        """
-        uri = (
-            invocation_context.integration.get("uri")
-            or invocation_context.integration.get("integrationUri")
-            or ""
-        )
-        variables = {"stageVariables": invocation_context.stage_variables}
-        uri = VtlTemplate().render_vtl(uri, variables)
-        if ":lambda:path" in uri:
-            uri = uri.split(":lambda:path")[1].split("functions/")[1].split("/invocations")[0]
-        return uri
 
     def invoke(self, invocation_context: ApiInvocationContext):
         headers = helpers.create_invocation_headers(invocation_context)
@@ -445,6 +431,22 @@ class LambdaIntegration(BackendIntegration):
         self.response_templates.render(invocation_context)
         invocation_context.response.headers["Content-Length"] = str(len(response.content or ""))
         return invocation_context.response
+
+    def _lambda_integration_uri(self, invocation_context: ApiInvocationContext):
+        """
+        https://docs.aws.amazon.com/apigateway/latest/developerguide/aws-api-gateway-stage-variables-reference.html
+        """
+        uri = (
+                invocation_context.integration.get("uri")
+                or invocation_context.integration.get("integrationUri")
+                or ""
+        )
+        variables = {"stageVariables": invocation_context.stage_variables}
+        uri = VtlTemplate().render_vtl(uri, variables)
+        if ":lambda:path" in uri:
+            uri = uri.split(":lambda:path")[1].split("functions/")[1].split("/invocations")[0]
+        return uri
+
 
 
 class KinesisIntegration(BackendIntegration):
